@@ -4,6 +4,10 @@ import cookieParser from "cookie-parser"
 import helmet from "helmet"
 import authRoutes from "./routes/auth.routes"
 import { authenticate } from "./middleware/auth.middleware"
+import foodRoutes from "./routes/food.routes"
+import cartRoutes from "./routes/cart.routes"
+import orderRoutes from "./routes/order.routes"
+import categoryRoutes from "./routes/category.routes"
 
 const app = express()
 
@@ -12,6 +16,10 @@ app.use(cors())
 app.use(cookieParser())
 app.use(helmet())
 app.use("/api/auth", authRoutes)
+app.use("/api/foods", foodRoutes)
+app.use("/api/cart", cartRoutes)
+app.use("/api/orders", orderRoutes)
+app.use("/api/categories", categoryRoutes)
 
 app.get("/", (req, res) => {
   res.send("My API running")
