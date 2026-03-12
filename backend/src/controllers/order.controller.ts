@@ -12,6 +12,7 @@ export const placeOrder = async (req: Request, res: Response) => {
       order
     })
   } catch (error) {
+    console.error(error)
     res.status(400).json({ error: "Unable to place order" })
   }
 }
