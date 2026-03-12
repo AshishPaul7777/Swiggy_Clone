@@ -16,6 +16,15 @@ export const register = async (req: Request, res: Response) => {
   try {
     const data = registerSchema.parse(req.body)
 
+    // Check if user already exists
+    const existingUser = await findUserByEmail(data.email)
+
+    if (existingUser) {
+      return res.status(400).json({
+        message: "Email already registered"
+      })
+    }
+
     const user = await createUser(
       data.name,
       data.email,
@@ -90,7 +99,9 @@ export const login = async (req: Request, res: Response) => {
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: false, 
-      sameSite: "lax"
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000
+
     })
 
     res.json({
