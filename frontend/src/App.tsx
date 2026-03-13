@@ -1,16 +1,25 @@
-import { Button } from "@/components/ui/button"
+import AppRoutes from "./routes"
 import { Toaster } from "@/components/ui/sonner"
+import { useState, useEffect } from "react"
+import { useQueryClient } from "@tanstack/react-query"
+import { getCategories } from "@/api/categoryApi"
 
 function App() {
-  return (
-    <div className="flex h-screen items-center justify-center bg-gray-100">
-      <Button className="text-lg">Tastevia 🚀</Button>
-    </div>
-  )
+
+  const [search, setSearch] = useState("")
+
+  const queryClient = useQueryClient()
+
+  useEffect(() => {
+    queryClient.prefetchQuery({
+      queryKey: ["categories"],
+      queryFn: getCategories,
+    })
+  }, [queryClient])
+
   return (
     <>
-      {/* your routes here */}
-
+      <AppRoutes search={search} setSearch={setSearch} />
       <Toaster />
     </>
   )
