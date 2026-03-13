@@ -6,10 +6,12 @@ import {
 } from "../services/food.service"
 
 export const getFoods = async (req: Request, res: Response) => {
-  const foods = await getAllFoods()
+  const categoryId = req.query.categoryId as string | undefined
+
+  const foods = await getAllFoods(categoryId)
+
   res.json(foods)
 }
-
 export const getFood = async (req: Request, res: Response) => {
   const id = req.params.id as string  
   const food = await getFoodById(id)

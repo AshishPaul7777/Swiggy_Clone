@@ -2,7 +2,15 @@ import { db } from "../db"
 import { foodItems } from "../db/schema"
 import { eq } from "drizzle-orm"
 
-export async function getAllFoods() {
+export async function getAllFoods(categoryId?: string) {
+
+  if (categoryId) {
+    return await db
+      .select()
+      .from(foodItems)
+      .where(eq(foodItems.categoryId, categoryId))
+  }
+
   return await db.select().from(foodItems)
 }
 
