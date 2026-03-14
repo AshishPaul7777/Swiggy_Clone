@@ -1,18 +1,36 @@
 import { Request, Response } from "express"
-import { createOrder } from "../services/order.service"
+import { ZodError } from "zod"
+import { createCheckoutOrderSchema } from "../validators/payment.validator"
+import { createCheckoutOrder } from "../services/order.service"
 
-export const placeOrder = async (req: Request, res: Response) => {
+export const createCheckoutOrderController = async (
+  req: Request,
+  res: Response
+) => {
   try {
-    const userId = (req as any).user.userId
+    const userId = (req as any).user.userId as string
+    const payload = createCheckoutOrderSchema.parse(req.body)
 
-    const order = await createOrder(userId)
+    const checkout = await createCheckoutOrder(
+      userId,
+      payload.addressId,
+      payload.items
+    )
 
     res.json({
-      message: "Order placed successfully",
-      order
+      message: "Checkout order created successfully",
+      ...checkout
     })
   } catch (error) {
-    console.error(error)
-    res.status(400).json({ error: "Unable to place order" })
+    if (error instanceof ZodError) {
+      res.status(400).json({
+        message: error.issues[0]?.message ?? "Invalid checkout payload"
+      })
+      return
+    }
+
+    res.status(400).json({
+      message: error instanceof Error ? error.message : "Unable to create checkout order"
+    })
   }
 }

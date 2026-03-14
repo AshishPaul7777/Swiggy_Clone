@@ -7,6 +7,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
+    "db:migrate": "drizzle-kit migrate",
     "seed:categories": "tsx src/seed/seedCategories.ts",
     "seed:foods": "tsx src/seed/seedFoods.ts"
   },
@@ -26,6 +27,7 @@
     "multer": "^2.1.1",
     "multer-storage-cloudinary": "^4.0.0",
     "pg": "^8.20.0",
+    "razorpay": "^2.9.6",
     "zod": "^4.3.6"
   },
   "devDependencies": {

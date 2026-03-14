@@ -1,8 +1,9 @@
 import express from "express"
-import { createPaymentController } from "../controllers/payment.controller"
+import { authenticate } from "../middleware/auth.middleware"
+import { verifyPaymentController } from "../controllers/payment.controller"
 
 const router = express.Router()
 
-router.post("/", createPaymentController)
+router.post("/verify", authenticate, verifyPaymentController)
 
 export default router

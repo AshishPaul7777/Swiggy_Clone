@@ -4,11 +4,59 @@ import bcrypt from "bcrypt"
 import { eq } from "drizzle-orm"
 
 import { db } from "../db"
-import { refreshTokens } from "../db/schema"
+import { refreshTokens, users } from "../db/schema"
 
 import { createUser, findUserByEmail } from "../services/auth.service"
 import { registerSchema, loginSchema } from "../validators/auth.validator"
 
+const buildAuthResponse = async (user: {
+  id: string
+  name: string
+  email: string
+}) => {
+  if (!process.env.JWT_SECRET) {
+    throw new Error("JWT_SECRET is missing in backend environment")
+  }
+
+  const accessToken = jwt.sign(
+    { userId: user.id },
+    process.env.JWT_SECRET as string,
+    { expiresIn: "15m" }
+  )
+
+  let refreshToken: string | null = null
+
+  if (process.env.JWT_REFRESH_SECRET) {
+    refreshToken = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_REFRESH_SECRET as string,
+      { expiresIn: "7d" }
+    )
+
+    try {
+      await db.insert(refreshTokens).values({
+        userId: user.id,
+        token: refreshToken,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+      })
+    } catch (error) {
+      console.error("Refresh token persistence failed:", error)
+      refreshToken = null
+    }
+  } else {
+    console.warn("JWT_REFRESH_SECRET is missing. Session refresh is disabled.")
+  }
+
+  return {
+    accessToken,
+    refreshToken,
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email
+    }
+  }
+}
 
 //Register
 
@@ -31,15 +79,28 @@ export const register = async (req: Request, res: Response) => {
       data.password
     )
 
+    const auth = await buildAuthResponse(user)
+
+    if (auth.refreshToken) {
+      res.cookie("refreshToken", auth.refreshToken, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000
+      })
+    }
+
     res.status(201).json({
       message: "User created successfully",
-      user
+      accessToken: auth.accessToken,
+      user: auth.user
     })
 
   } catch (error) {
+    console.error("Register failed:", error)
+
     res.status(400).json({
-      message: "Registration failed",
-      error
+      message: error instanceof Error ? error.message : "Registration failed"
     })
   }
 }
@@ -70,49 +131,28 @@ export const login = async (req: Request, res: Response) => {
       })
     }
 
-    // ACCESS TOKEN 
+    const auth = await buildAuthResponse(user)
 
-    const accessToken = jwt.sign(
-      { userId: user.id },
-      process.env.JWT_SECRET as string,
-      { expiresIn: "15m" }
-    )
-
-    // REFRESH TOKEN 
-
-    const refreshToken = jwt.sign(
-      { userId: user.id },
-      process.env.JWT_REFRESH_SECRET as string,
-      { expiresIn: "7d" }
-    )
-
-    // Storing my refresh token in the db
-
-    await db.insert(refreshTokens).values({
-      userId: user.id,
-      token: refreshToken,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-    })
-
-    //Cookie
-
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: false, 
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000
-
-    })
+    if (auth.refreshToken) {
+      res.cookie("refreshToken", auth.refreshToken, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000
+      })
+    }
 
     res.json({
       message: "Login successful",
-      accessToken
+      accessToken: auth.accessToken,
+      user: auth.user
     })
 
   } catch (error) {
+    console.error("Login failed:", error)
+
     res.status(400).json({
-      message: "Login failed",
-      error
+      message: error instanceof Error ? error.message : "Login failed"
     })
   }
 }
@@ -154,8 +194,18 @@ export const refresh = async (req: Request, res: Response) => {
       { expiresIn: "15m" }
     )
 
+    const user = await db
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email
+      })
+      .from(users)
+      .where(eq(users.id, payload.userId))
+
     res.json({
-      accessToken: newAccessToken
+      accessToken: newAccessToken,
+      user: user[0]
     })
 
   } catch (error) {

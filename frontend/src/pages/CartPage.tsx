@@ -1,10 +1,13 @@
 import { useCartStore } from "@/store/cartStore"
 import CartItem from "@/components/cart/CartItem"
 import { useNavigate } from "react-router-dom"
+import { toast } from "sonner"
+import { useAuthStore } from "@/store/authStore"
 
 export default function CartPage() {
 
   const items = useCartStore((state) => state.items)
+  const user = useAuthStore((state) => state.user)
 
   const navigate = useNavigate()
 
@@ -19,6 +22,16 @@ export default function CartPage() {
         Your cart is empty
       </div>
     )
+  }
+
+  const handleCheckout = () => {
+    if (!user) {
+      toast.error("Please login to place an order")
+      navigate("/login?redirect=%2Fcheckout")
+      return
+    }
+
+    navigate("/checkout")
   }
 
   return (
@@ -39,7 +52,7 @@ export default function CartPage() {
 
       {/* Checkout Button */}
       <button
-        onClick={() => navigate("/checkout")}
+        onClick={handleCheckout}
         className="w-full mt-4 bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600"
       >
         Proceed to Checkout
