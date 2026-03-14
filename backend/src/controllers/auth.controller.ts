@@ -9,6 +9,15 @@ import { refreshTokens, users } from "../db/schema"
 import { createUser, findUserByEmail } from "../services/auth.service"
 import { registerSchema, loginSchema } from "../validators/auth.validator"
 
+const isProduction = process.env.NODE_ENV === "production"
+
+const refreshCookieOptions = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
+  maxAge: 7 * 24 * 60 * 60 * 1000
+} as const
+
 const buildAuthResponse = async (user: {
   id: string
   name: string
@@ -82,12 +91,7 @@ export const register = async (req: Request, res: Response) => {
     const auth = await buildAuthResponse(user)
 
     if (auth.refreshToken) {
-      res.cookie("refreshToken", auth.refreshToken, {
-        httpOnly: true,
-        secure: false,
-        sameSite: "lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000
-      })
+      res.cookie("refreshToken", auth.refreshToken, refreshCookieOptions)
     }
 
     res.status(201).json({
@@ -134,12 +138,7 @@ export const login = async (req: Request, res: Response) => {
     const auth = await buildAuthResponse(user)
 
     if (auth.refreshToken) {
-      res.cookie("refreshToken", auth.refreshToken, {
-        httpOnly: true,
-        secure: false,
-        sameSite: "lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000
-      })
+      res.cookie("refreshToken", auth.refreshToken, refreshCookieOptions)
     }
 
     res.json({
@@ -228,7 +227,7 @@ export const logout = async (req: Request, res: Response) => {
       .where(eq(refreshTokens.token, token))
   }
 
-  res.clearCookie("refreshToken")
+  res.clearCookie("refreshToken", refreshCookieOptions)
 
   res.json({
     message: "Logged out successfully"
