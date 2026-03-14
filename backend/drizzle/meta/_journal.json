@@ -8,6 +8,27 @@
       "when": 1773059841837,
       "tag": "0000_tearful_sleepwalker",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1773061200000,
+      "tag": "0001_profile_and_addresses",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773481212770,
+      "tag": "0002_modern_maestro",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1773481212771,
+      "tag": "0003_order_items_history",
+      "breakpoints": true
     }
   ]
 }

@@ -11,6 +11,7 @@ import categoryRoutes from "./routes/category.routes"
 import featuredRoutes from "./routes/featured.routes"
 import paymentRoutes from "./routes/payment.routes"
 import searchRoutes from "./routes/search.routes"
+import profileRoutes from "./routes/profile.routes"
 import { errorHandler } from "./middleware/error.middleware";
 
 const app = express()
@@ -32,16 +33,11 @@ app.use("/api/categories", categoryRoutes)
 app.use("/api/featured", featuredRoutes)
 app.use("/api/payments", paymentRoutes)
 app.use("/api/search", searchRoutes)
+app.use("/api/profile", profileRoutes)
 app.use(errorHandler);
 
 app.get("/", (req, res) => {
   res.send("My API running")
-})
-app.get("/api/profile", authenticate, (req, res) => {
-  res.json({
-    message: "Access granted",
-    user: (req as any).user
-  })
 })
 app.listen(5000, () => {
   console.log("Server running on port 5000")

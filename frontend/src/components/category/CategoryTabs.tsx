@@ -1,4 +1,5 @@
 import { useCategories } from "@/hooks/useCategories"
+import type { Category } from "@/types/category"
 
 type Props = {
   selected: string | null
@@ -6,45 +7,43 @@ type Props = {
 }
 
 export default function CategoryTabs({ selected, onSelect }: Props) {
-
   const { data } = useCategories()
 
-  // Remove duplicate categories by id
   const uniqueCategories = data?.filter(
-    (category: any, index: number, self: any[]) =>
-      index === self.findIndex((c) => c.id === category.id)
+    (category: Category, index: number, self: Category[]) =>
+      index === self.findIndex(
+        (c) =>
+          c.name?.trim().toLowerCase() ===
+          category.name?.trim().toLowerCase()
+      )
   )
 
   return (
-    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-
-      {/* All Button */}
+    <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide">
       <button
-        className={`px-4 py-2 rounded-full border whitespace-nowrap ${
-          selected === null ? "bg-black text-white" : "bg-white"
+        className={`whitespace-nowrap rounded-full border px-5 py-2.5 text-sm font-semibold shadow-sm transition ${
+          selected === null
+            ? "border-zinc-950 bg-zinc-950 text-white"
+            : "border-zinc-200 bg-white/90 text-zinc-700 hover:border-orange-200 hover:text-orange-600"
         }`}
         onClick={() => onSelect(null)}
       >
         All
       </button>
 
-      {/* Categories */}
-      {uniqueCategories?.map((category: any) => (
-
+      {uniqueCategories?.map((category) => (
         <button
           key={category.id}
           onClick={() => onSelect(category.id)}
-          className={`px-4 py-2 rounded-full border whitespace-nowrap ${
+          className={`whitespace-nowrap rounded-full border px-5 py-2.5 text-sm font-semibold shadow-sm transition ${
             selected === category.id
-              ? "bg-black text-white"
-              : "bg-white"
+              ? "border-zinc-950 bg-zinc-950 text-white"
+              : "border-zinc-200 bg-white/90 text-zinc-700 hover:border-orange-200 hover:text-orange-600"
           }`}
         >
           {category.name}
         </button>
-
       ))}
-
     </div>
   )
 }

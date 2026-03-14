@@ -1,17 +1,30 @@
 import { useParams } from "react-router-dom"
-import { useFoods } from "@/hooks/useFoods"
+import { useFood } from "@/hooks/useFood"
 import { Button } from "@/components/ui/button"
 import { useCartStore } from "@/store/cartStore"
+import { toast } from "sonner"
 
 export default function FoodPage() {
 
   const { id } = useParams()
 
-  const { data: food, isLoading } = useFoods(id!)
+  const { data: food, isLoading } = useFood(id)
 
   const addItem = useCartStore((state) => state.addItem)
 
   if (isLoading) return <p>Loading...</p>
+  if (!food) return <p>Food not found.</p>
+
+  const handleAddToCart = () => {
+    addItem({
+      id: food.id,
+      name: food.name,
+      price: food.price,
+      quantity: 1
+    })
+
+    toast.success(`${food.name} added to cart`)
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -35,14 +48,7 @@ export default function FoodPage() {
       </p>
 
       <Button
-        onClick={() =>
-          addItem({
-            id: food.id,
-            name: food.name,
-            price: food.price,
-            quantity: 1
-          })
-        }
+        onClick={handleAddToCart}
       >
         Add to Cart
       </Button>
