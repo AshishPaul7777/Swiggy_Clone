@@ -1,4 +1,4 @@
-import { Suspense, lazy, useState } from "react"
+import { Suspense, lazy, useEffect, useState } from "react"
 import { useDebounce } from "@/hooks/useDebounce"
 import { useSearchFoods } from "@/hooks/useSearchFoods"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -62,14 +62,44 @@ function FoodGridFallback() {
 
 export default function HomePage({ search }: Props) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [deferredSectionsReady, setDeferredSectionsReady] = useState(false)
 
   const debouncedSearch = useDebounce(search)
   const isSearching = debouncedSearch.trim().length > 0
+  const showDeferredSections = isSearching || deferredSectionsReady
 
   const {
     data: searchResults,
     isLoading: isSearchLoading
   } = useSearchFoods(debouncedSearch)
+
+  useEffect(() => {
+    if (isSearching) {
+      return
+    }
+
+    const revealDeferredSections = () => {
+      setDeferredSectionsReady(true)
+    }
+
+    if (typeof window === "undefined") {
+      revealDeferredSections()
+      return
+    }
+
+    let timeoutId: number | null = null
+    const frameId = window.requestAnimationFrame(() => {
+      timeoutId = window.setTimeout(revealDeferredSections, 150)
+    })
+
+    return () => {
+      window.cancelAnimationFrame(frameId)
+
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId)
+      }
+    }
+  }, [isSearching])
 
   return (
     <div className="space-y-12">
@@ -152,28 +182,37 @@ export default function HomePage({ search }: Props) {
             </div>
           </section>
 
-          <section className="space-y-4">
-            <SectionHeader label="Featured" title="Plates with presence" />
+          {showDeferredSections ? (
+            <>
+              <section className="space-y-4">
+                <SectionHeader label="Featured" title="Plates with presence" />
 
-            <Suspense fallback={<FeaturedFallback />}>
-              <FeaturedCarousel />
-            </Suspense>
-          </section>
+                <Suspense fallback={<FeaturedFallback />}>
+                  <FeaturedCarousel />
+                </Suspense>
+              </section>
 
-          <section className="space-y-4">
-            <SectionHeader label="Explore" title="Pick your craving" />
+              <section className="space-y-4">
+                <SectionHeader label="Explore" title="Pick your craving" />
 
-            <Suspense fallback={<CategoryTabsFallback />}>
-              <CategoryTabs
-                selected={selectedCategory}
-                onSelect={setSelectedCategory}
-              />
-            </Suspense>
-          </section>
+                <Suspense fallback={<CategoryTabsFallback />}>
+                  <CategoryTabs
+                    selected={selectedCategory}
+                    onSelect={setSelectedCategory}
+                  />
+                </Suspense>
+              </section>
 
-          <Suspense fallback={<FoodGridFallback />}>
-            <FoodGrid categoryId={selectedCategory} />
-          </Suspense>
+              <Suspense fallback={<FoodGridFallback />}>
+                <FoodGrid categoryId={selectedCategory} />
+              </Suspense>
+            </>
+          ) : (
+            <section className="space-y-6" aria-hidden="true">
+              <FeaturedFallback />
+              <CategoryTabsFallback />
+            </section>
+          )}
         </>
       )}
     </div>
