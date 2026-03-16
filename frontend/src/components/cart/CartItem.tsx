@@ -10,7 +10,7 @@ export default function CartItem({ item }: Props) {
 
   return (
     <div className="rounded-[24px] border border-zinc-200 bg-white px-4 py-4 shadow-sm">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="truncate text-base font-bold text-zinc-950">
             {item.name}
@@ -23,7 +23,7 @@ export default function CartItem({ item }: Props) {
           <p className="mt-3 text-xs font-bold uppercase tracking-[0.25em] text-orange-500">
             Cart Item
           </p>
-        </div>
+        </div> 
 
         <div className="flex shrink-0 items-center gap-2">
           <button
