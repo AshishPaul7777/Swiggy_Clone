@@ -16,10 +16,10 @@ export default function SearchBar({ onSearch }: Props) {
 
   return (
     <Input
-      placeholder="Search cravings, biryani, burgers..."
+      placeholder="Search cravings..."
       value={value}
       onChange={handleChange}
-      className="h-11 w-full max-w-xl rounded-full border-zinc-200 bg-white/85 px-5 shadow-sm md:w-[28rem]"
+      className="h-10 w-full min-w-0 rounded-full border-zinc-200 bg-white/85 px-3 text-sm shadow-sm sm:h-11 sm:px-5 sm:text-base md:max-w-xl lg:max-w-2xl"
     />
   )
 }

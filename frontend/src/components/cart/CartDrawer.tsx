@@ -41,13 +41,13 @@ export default function CartDrawer() {
 
   return (
     <Sheet>
-      <SheetTrigger className="relative">
-        <div className="inline-flex size-11 items-center justify-center rounded-full border border-zinc-200 bg-white/90 text-zinc-900 shadow-sm transition hover:-translate-y-0.5 hover:bg-white">
-          <ShoppingCart size={22} />
+      <SheetTrigger className="relative flex-shrink-0">
+        <div className="inline-flex size-9 sm:size-11 items-center justify-center rounded-full border border-zinc-200 bg-white/90 text-zinc-900 shadow-sm transition hover:-translate-y-0.5 hover:bg-white">
+          <ShoppingCart size={20} className="sm:size-[22px]" />
         </div>
 
         {itemCount > 0 && (
-          <span className="absolute -top-2 -right-2 rounded-full bg-red-500 px-2 py-0.5 text-xs text-white">
+          <span className="absolute -top-2 -right-2 rounded-full bg-red-500 px-1.5 py-0.5 text-xs font-bold text-white sm:px-2">
             {itemCount}
           </span>
         )}
